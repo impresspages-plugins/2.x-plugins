@@ -1,0 +1,15 @@
+
+.ipPluginSimpleSlideshowImages {
+    display: none;
+}
+
+.ipPluginSimpleSlideshowTabs {
+    display: none;
+}
+
+
+.ipPluginSimpleSlideshowImages > div {
+    position: absolute;
+}
+
+
