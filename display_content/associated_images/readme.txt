@@ -18,6 +18,12 @@ CONFIGURATION
 Each time you upload new photo, plugin creates two versions of it: regular and big.
 You can change cropping options on tab Developer -> Modules config -> Display content -> Associated images -> Options.
 
+New features (v1.04):
+
+1. Plugin is now language-aware (this is more bugfix than feature tbh)
+2. In case you don't want to display elements of zone, but want zone to appear in selection, now you can append "*" - asterisk to the end of zone name in exclude option.
+This gives you ability to ignore/not display elements of zone in new/update window, but show zone itself.
+
 
 USAGE
 

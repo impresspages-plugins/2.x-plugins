@@ -46,13 +46,14 @@ class ElementPages extends \Modules\developer\std_mod\Element { //data element i
 			$html->html('<br /><input type="checkbox" class="stdModBox" name="' . htmlspecialchars($name) . '" />');
 			$html->html('<span class="label">' . htmlspecialchars($language['title']) . '</span><br />');
 			foreach ($language['zones'] as $zoneKey => $zone) {
-				if (count($zone['options']) == 0) {
-					continue;
-				}
+
 				$name = $prefix . '_' . $language['id']. '_' . $zoneKey . '_';
 				
 				$html->html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" class="stdModBox" name="' . htmlspecialchars($name) . '" />');
 				$html->html('<span class="label">' . htmlspecialchars($zone['title']) . '</span><br />');
+                if (count($zone['options']) == 0) {
+                    continue;
+                }
 				foreach ($zone['options'] as $optionKey => $value) {
 		
 					$name = $prefix . '_' . $language['id']. '_' . $zoneKey. '_' . $value[0];
@@ -96,9 +97,6 @@ class ElementPages extends \Modules\developer\std_mod\Element { //data element i
 			}
 			$html->html('<span class="label">' . htmlspecialchars($language['title']) . '</span><br />');
 			foreach ($language['zones'] as $zoneKey => $zone) {
-				if (count($zone['options']) == 0) {
-					continue;
-				}
 				$name = $prefix . '_' . $language['id']. '_' . $zoneKey . '_';
 				if (isset($valueIndex[$language['id'].'_'.$zoneKey.'_'])) {
 					$html->html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input checked="checked" type="checkbox" class="stdModBox" name="' . htmlspecialchars($name) . '" />');
@@ -106,6 +104,9 @@ class ElementPages extends \Modules\developer\std_mod\Element { //data element i
 					$html->html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" class="stdModBox" name="' . htmlspecialchars($name) . '" />');
 				}
 				$html->html('<span class="label">' . htmlspecialchars($zone['title']) . '</span><br />');
+                if (count($zone['options']) == 0) {
+                    continue;
+                }
 				foreach ($zone['options'] as $optionKey => $value) {
 		
 					$name = $prefix . '_' . $language['id']. '_' . $zoneKey. '_' . $value[0];
@@ -281,36 +282,42 @@ class ElementPages extends \Modules\developer\std_mod\Element { //data element i
 		
 		$tmpExcludedZones = explode("\n", $parametersMod->getValue('display_content', 'associated_images', 'options', 'excluded_zones'));		
 		$excludedZones = array();
+        $excludedZonesChilds = array();
 		foreach($tmpExcludedZones as $excludedZone) {
+            if(substr($excludedZone,-1)=='*')
+            {
+                $excludedZone=str_replace("*","",$excludedZone);
+                $excludedZonesChilds[trim($excludedZone)]= 1;
+                continue;
+            }
 			$excludedZones[trim($excludedZone)] = 1;
 		}
 		$languages = $site->getLanguages();//get all languages including hidden
 		
 		$answer = array();
 		$zones = $site->getZones();
-		
+
 		foreach($languages as $language) {
 			$answer[$language->getId()] = array('id' => $language->getId(), 'title' => $language->getShortDescription());
 			$answer[$language->getId()]['zones'] = array();
 			foreach($zones as $key => $zone) {
 				if (!isset($excludedZones[$zone->getName()])) {
 					$answer[$language->getId()]['zones'][$zone->getName()] = array('title' => $zone->getTitle(), 'name' => $zone->getName());
-					$answer[$language->getId()]['zones'][$zone->getName()]['options'] = $this->_getPages($zone);
+                    $answer[$language->getId()]['zones'][$zone->getName()]['options'] = (!isset($excludedZonesChilds[$zone->getName()]) ? $this->_getPages($zone, $language->getId()) : array());
 				}
 			}
 		}
-	  
 		return $answer;
 	}
 
-	private function _getPages($zone, $parent = null, $prefix = ''){
+	private function _getPages($zone, $language_id, $parent = null, $prefix = ''){
 		$answer = array();
-		$elements = $zone->getElements(null, $parent);
+		$elements = $zone->getElements($language_id, $parent);
 
     if ($elements) {
   		foreach($elements as $elementKey => $element) {
   			$answer[] = array($element->getId(), $prefix .  $element->getButtonTitle());
-  			$answer = array_merge($answer, $this->_getPages($zone, $element->getId(), '—'.$prefix));
+  			$answer = array_merge($answer, $this->_getPages($zone, $language_id, $element->getId(), '—'.$prefix));
   		}
 		}
 		//'—'.$prefix
